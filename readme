@@ -1,0 +1,12 @@
+Short program which allows my daughter to write with her finger in air, and therefore practice writing in a fun way.
+
+Program can detect one hand, whose index finger becomes a pointer to write in the air.
+There are two modes in air_note:
+ - selection mode is on only when index and middle finger are close to each other. That allows user to stop writing,
+ randomly select new letter, and quit program;
+ - painting mode where index and middle finger are far from each other, allows user to write, or paint with index
+ finger.
+
+Whole air_note is based on cv2 which captures camera input and numpy.zeros table which shadows camera input creating
+canvas and saves index finger moves. After that image of camera and canvas are blended together to
+create trace of tip of index finger on real time camera image.

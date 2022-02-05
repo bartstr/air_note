@@ -5,23 +5,26 @@ import time
 from cvzone.HandTrackingModule import HandDetector
 from random import randint
 
+# capture camera input and add hand detection to it
 capture = cv2.VideoCapture(0)
 capture.set(3, 1280)
 capture.set(4, 720)
 detector = HandDetector(detectionCon=0.8, maxHands=1)
 
+# create numpy canvas which shadows camera input
 canvas = np.zeros((720, 1280, 3), np.uint8)
 
+# set of coordinates used further to create "menu" rectangles
 x1n, x2n, y1n, y2n = 1280, 1, 1080, 101
 x1e, x2e, y1e, y2e = 200, 1, 1, 101
 x1l, x2l, y1l, y2l = 800, 1, 600, 101
+
+prev_x, prev_y = 0, 0
+change = False  # additional variable to stop constant change of letters while pointer is in "next letter rectangle"
+
 letters_list = ['a', 'A', 'b', 'B', 'c', 'C', 'd', 'D', 'e', 'E', 'f', 'F', 'g', 'G', 'h', 'H', 'i', 'I', 'j', 'J', 'k',
                 'K', 'l', 'L', 'm', 'M', 'n', 'N', 'o', 'O', 'p', 'P', 'q', 'Q', 'r', 'R', 's', 'S', 't', 'T', 'u', 'U',
                 'w', 'W', 'x', 'X', 'y', 'Y', 'z', 'Z']
-
-prev_x, prev_y = 0, 0
-
-change = False
 
 
 def draw_another_letter(letters_list):
@@ -33,7 +36,8 @@ def draw_another_letter(letters_list):
     yield letter
 
 
-letter = draw_another_letter(letters_list).__next__()
+letter = draw_another_letter(letters_list).__next__()  # establish first letter to draw
+
 
 while True:
     mode = 'selection'
@@ -69,17 +73,21 @@ while True:
                 canvas = np.zeros((720, 1280, 3), np.uint8)
                 mode = 'painting'
 
+    # three "menu" rectangles
     exit_frame = cv2.rectangle(frame, (x1e, x2e), (y1e, y2e), (0, 0, 0), cv2.BORDER_WRAP)
     cv2.putText(exit_frame, "EXIT", (x1e - 130, y2e - 50), cv2.FONT_HERSHEY_PLAIN, 2, (36, 255, 12), 2)
     next_frame = cv2.rectangle(frame, (x1n, x2n), (y1n, y2n), (0, 0, 0), cv2.BORDER_WRAP)
     cv2.putText(next_frame, "NEXT", (x1n - 130, y2n - 50), cv2.FONT_HERSHEY_PLAIN, 2, (36, 255, 12), 2)
     letter_frame = cv2.rectangle(frame, (x1l, x2l), (y1l, y2l), (0, 0, 0), cv2.BORDER_WRAP)
     cv2.putText(letter_frame, letter, (x1l - 100, y2l - 40), cv2.FONT_HERSHEY_PLAIN, 3, (0, 0, 0), 3)
+
+    # merge of numpy canvas image which shows pointer ("finger") move to whole camera input
     gray_image = cv2.cvtColor(canvas, cv2.COLOR_BGR2GRAY)
     _, img_inverted = cv2.threshold(gray_image, 50, 255, cv2.THRESH_BINARY_INV)
     img_inverted = cv2.cvtColor(img_inverted, cv2.COLOR_GRAY2BGR)
     frame = cv2.bitwise_and(frame, img_inverted)
     frame = cv2.bitwise_or(frame, canvas)
+
     cv2.imshow("Image", frame)
     if cv2.waitKey(1) & 0xFF == ord("q"):
         break
